@@ -14,6 +14,7 @@ class AbstractPokemon(ABC):
 
     @abstractmethod
     def get_pokemon_attack_coef(self) -> float:
+        print("Hello")
         pass
 
     def level_up(self) -> None:
