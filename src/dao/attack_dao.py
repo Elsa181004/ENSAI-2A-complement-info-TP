@@ -43,6 +43,59 @@ class AttackDao(metaclass=Singleton):
 
         return created
 
+    def find_attack_by_id(self, id:int) -> AbstractAttack:
+        """
+        returns the attack with the given ID or None if the attack is not found
+        """
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor: 
+                cursor.execute(
+                    "SELECT id_attack, power, accuracy, element, attack_name, attack_description, attack_type_name                     "
+                    "FROM tp.attack                   "
+                    "JOIN tp.attack_type USING(id_attack_type) "
+                    "WHERE id_attack = %(id_attack)s ",
+                    {"id_attack": id},
+                )
+                res = cursor.fetchone()
+
+        if res:
+            return AttackFactory().instantiate_attack(
+                type= res["attack_type_name"],
+                id=res["id_attack"],
+                power=res["power"],
+                name=res["attack_name"],
+                description=res["attack_description"],
+                accuracy=res["accuracy"],
+                element=res["element"]
+            )
+        return None
+
+    def find_all_attacks(self) -> List[AbstractAttack]:
+        """returns a list of all attacks"""
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor: 
+                cursor.execute(
+                    "SELECT id_attack, power, accuracy, element, attack_name, attack_description, attack_type_name                     "
+                    "FROM tp.attack                   "
+                    "JOIN tp.attack_type USING(id_attack_type) "
+                )
+                rows = cursor.fetchall()
+
+        attacks = []
+        if rows:
+            for res in rows:
+                attack = AttackFactory().instantiate_attack(
+                    type=res["attack_type_name"],
+                    id=res["id_attack"],
+                    power=res["power"],
+                    name=res["attack_name"],
+                    description=res["attack_description"],
+                    accuracy=res["accuracy"],
+                    element=res["element"]
+                )
+            attacks.append(attack)
+            return attacks
+        return None 
 
 if __name__ == "__main__":
     # Pour charger les variables d'environnement contenues dans le fichier .env
